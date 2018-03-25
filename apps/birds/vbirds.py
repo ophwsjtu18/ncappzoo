@@ -17,8 +17,8 @@ tiny_yolo_graph_file= './yolo_tiny.graph'
 googlenet_graph_file= './googlenet.graph'
 
 # Tiny Yolo assumes input images are these dimensions.
-TY_NETWORK_IMAGE_WIDTH = 448
-TY_NETWORK_IMAGE_HEIGHT = 448
+TY_NETWORK_IMAGE_WIDTH = 224	
+TY_NETWORK_IMAGE_HEIGHT = 224
 
 # GoogLeNet assumes input images are these dimensions
 GN_NETWORK_IMAGE_WIDTH = 224
@@ -296,105 +296,6 @@ def display_objects_in_gui(source_image, filtered_objects):
     return True
 
 
-
-# Executes googlenet inferences on all objects defined by filtered_objects
-# To run the inferences will crop an image out of source image based on the
-# boxes defined in filtered_objects and use that as input for googlenet.
-#
-# gn_graph is the googlenet graph object on which the inference should be executed.
-#
-# source_image the original image on which the inference was run.  The boxes
-#   defined by filtered_objects are rectangles within this image and will be
-#   used as input for googlenet
-#
-# filtered_objects [IN/OUT] upon input is a list of lists (as returned from filter_objects()
-#   each of the inner lists represent one found object and contain
-#   the following 6 values:
-#     string that is network classification ie 'cat', or 'chair' etc
-#     float value for box center X pixel location within source image
-#     float value for box center Y pixel location within source image
-#     float value for box width in pixels within source image
-#     float value for box height in pixels within source image
-#     float value that is the probability for the network classification.
-#   upon output the following 3 values from the googlenet inference will
-#   be added to each inner list of filtered_objects
-#     int value that is the index of the googlenet classification
-#     string value that is the googlenet classification string.
-#     float value that is the googlenet probability
-#
-# returns None
-def get_googlenet_classifications(gn_graph, source_image, filtered_objects):
-
-    # pad the height and width of the image boxes by this amount
-    # to make sure we get the whole object in the image that
-    # we pass to googlenet
-    WIDTH_PAD = 20
-    HEIGHT_PAD = 30
-
-    source_image_width = source_image.shape[1]
-    source_image_height = source_image.shape[0]
-
-    # loop through each box and crop the image in that rectangle
-    # from the source image and then use it as input for googlenet
-    for obj_index in range(len(filtered_objects)):
-        center_x = int(filtered_objects[obj_index][1])
-        center_y = int(filtered_objects[obj_index][2])
-        half_width = int(filtered_objects[obj_index][3])//2 + WIDTH_PAD
-        half_height = int(filtered_objects[obj_index][4])//2 + HEIGHT_PAD
-
-        # calculate box (left, top) and (right, bottom) coordinates
-        box_left = max(center_x - half_width, 0)
-        box_top = max(center_y - half_height, 0)
-        box_right = min(center_x + half_width, source_image_width)
-        box_bottom = min(center_y + half_height, source_image_height)
-
-        one_image = source_image[box_top:box_bottom, box_left:box_right]
-        filtered_objects[obj_index] += googlenet_inference(gn_graph, one_image)
-        #print (googlenet_inference(gn_graph, one_image))
-
-    return
-
-
-# Executes an inference using the googlenet graph and image passed
-# gn_graph is the googlenet graph object to use for the inference
-#   its assumed that this has been created with allocate graph and the
-#   googlenet graph file on an open NCS device.
-# input_image is the image on which a googlenet inference should be
-#   executed.  It will be resized to match googlenet image size requirements
-#   and also converted to float32.
-# returns a list of the following three items
-#   index of the most likely classification from the inference.
-#   label for the most likely classification from the inference.
-#   probability the most likely classification from the inference.
-def googlenet_inference(gn_graph, input_image):
-
-    # Resize image to googlenet network width and height
-    # then convert to float32, normalize (divide by 255),
-    # and finally convert to convert to float16 to pass to LoadTensor as input for an inference
-    input_image = cv2.resize(input_image, (GN_NETWORK_IMAGE_WIDTH, GN_NETWORK_IMAGE_HEIGHT), cv2.INTER_LINEAR)
-    input_image = input_image.astype(np.float32)
-    input_image[:, :, 0] = (input_image[:, :, 0] - gn_mean[0])
-    input_image[:, :, 1] = (input_image[:, :, 1] - gn_mean[1])
-    input_image[:, :, 2] = (input_image[:, :, 2] - gn_mean[2])
-
-    # Load tensor and get result.  This executes the inference on the NCS
-    gn_graph.LoadTensor(input_image.astype(np.float16), 'googlenet')
-    output, userobj = gn_graph.GetResult()
-
-    order = output.argsort()[::-1][:1]
-
-    '''
-    print('\n------- prediction --------')
-    for i in range(0, 1):
-        print('prediction ' + str(i) + ' (probability ' + str(output[order[i]]) + ') is ' + labels[
-            order[i]] + '  label index is: ' + str(order[i]))
-    '''
-
-    # index, label, probability
-    return order[0], gn_labels[order[0]], output[order[0]]
-
-
-
 # This function is called from the entry point to do
 # all the work.
 def main():
@@ -414,26 +315,18 @@ def main():
     # Set logging level and initialize/open the first NCS we find
     mvnc.SetGlobalOption(mvnc.GlobalOption.LOG_LEVEL, 0)
     devices = mvnc.EnumerateDevices()
-    if len(devices) < 2:
-        print('This application requires two NCS devices.')
-        print('Insert two devices and try again!')
+    if len(devices) < 1:
+        print('This application requires 1 NCS devices.')
+        print('Insert 1 devices and try again!')
         return 1
     ty_device = mvnc.Device(devices[0])
     ty_device.OpenDevice()
-
-    gn_device = mvnc.Device(devices[1])
-    gn_device.OpenDevice()
-
 
     #Load tiny yolo graph from disk and allocate graph via API
     with open(tiny_yolo_graph_file, mode='rb') as ty_file:
         ty_graph_from_disk = ty_file.read()
     ty_graph = ty_device.AllocateGraph(ty_graph_from_disk)
 
-    #Load googlenet graph from disk and allocate graph via API
-    with open(googlenet_graph_file, mode='rb') as gn_file:
-        gn_graph_from_disk = gn_file.read()
-    gn_graph = gn_device.AllocateGraph(gn_graph_from_disk)
 
     # GoogLenet initialization
     EXAMPLES_BASE_DIR = '../../'
@@ -451,7 +344,7 @@ def main():
     cv2.namedWindow(cv_window_name)
     cap = cv2.VideoCapture(0) #capture from 1st webcam
 
-    for input_image_file in input_image_filename_list :
+    while True:
         # Read image from file, resize it to network width and height
         # save a copy in img_cv for display, then convert to float32, normalize (divide by 255),
         # and finally convert to convert to float16 to pass to LoadTensor as input for an inference
@@ -470,7 +363,6 @@ def main():
         # filter out all the objects/boxes that don't meet thresholds
         filtered_objs = filter_objects(output.astype(np.float32), input_image.shape[1], input_image.shape[0]) # fc27 instead of fc12 for yolo_small
 
-        get_googlenet_classifications(gn_graph, display_image, filtered_objs)
 
         # check if the window has been closed.  all properties will return -1.0
         # for windows that are closed. If the user has closed the window via the
@@ -493,10 +385,6 @@ def main():
     # clean up tiny yolo
     ty_graph.DeallocateGraph()
     ty_device.CloseDevice()
-
-    # Clean up googlenet
-    gn_graph.DeallocateGraph()
-    gn_device.CloseDevice()
 
     print('Finished')
 
