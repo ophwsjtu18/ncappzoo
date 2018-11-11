@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/pi/workspace/ncappzoo/apps/street_cam/camstart
+Icon=/home/pi/image-recognition/demo01.jpg
