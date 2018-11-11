@@ -1,0 +1,118 @@
+﻿homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: 31.18
+  longitude: 121.43
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 0
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: UTC
+  # Customization file
+  customize: !include customize.yaml
+
+# Show links to resources in log and frontend
+introduction:
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+# Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+
+# http:
+#   base_url: example.duckdns.org:8123
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Enables a map showing the location of tracked devices
+map:
+
+# Track the sun
+sun:
+# Weather prediction
+sensor:
+  - platform: yr
+    name: Weather
+    forecast: 24           #未来24小时天气，可有手工按需修改
+    monitored_conditions:
+      - temperature        #气温
+      - precipitation      #雨量
+      - windSpeed          #风速
+      - pressure           #气压
+      - windDirection      #风向
+      - humidity           #湿度
+
+
+# Weather prediction
+#sensor:
+#  - platform: yr
+
+# Text to speech
+#tts:
+#  - platform: google
+tts:
+  - platform: baidu
+    #app_id，api_key，secret_key从百度云上注册得到
+    app_id: 14446291
+    api_key: WpKNLmyvzxjnmgsLH3APVKlS
+    secret_key: tO9H90wkzuAb4imldbqH0uhbnRpgNCu5
+    #speed：语速0-9（缺省5）
+    #pitch：语调0-9（缺省5）
+    #volume：音量0-15（缺省5）
+    #person：声音（0：女，1：男，3：百度合成，4：百度合成，缺省0）
+    speed: 5
+    pitch: 5
+    volume: 15
+    person: 0
+
+
+
+#小米网关
+xiaomi_aqara:
+  discovery_retry: 5
+  gateways:
+    - key: ymkjzajj2jwhuwfi
+#飞利浦
+hue:
+  bridges:
+    - host: 192.168.2.130   #你的ip地址
+
+# Cloud
+cloud:
+
+#kodi
+media_player:
+  - platform: kodi
+    host: 127.0.0.1
+
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+python_script:
+hachina:
+  step: 8

@@ -1,0 +1,24 @@
+'1541904214688':
+  alias: moocscript
+  sequence:
+  - alias: ''
+    data:
+      entity_id: light.hue_color_lamp_1
+    service: light.turn_on
+'1541906479508':
+  alias: New Script
+  sequence:
+  - data:
+      name: you
+    service: python_script.hello_world
+'1541906817588':
+  alias: light
+  sequence:
+  - alias: ''
+    data:
+      entity_id: light.hue_color_lamp_1
+      rgb_color:
+      - 255
+      - 0
+      - 0
+    service: python_script.light
