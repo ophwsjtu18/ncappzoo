@@ -35,8 +35,8 @@ gn_labels = [""]
 # for title bar of GUI window
 cv_window_name = 'stream_ty_gn - Q to quit'
 
-actual_frame_width = 0
-actual_frame_height = 0
+actual_frame_width = 960
+actual_frame_height = 540
 
 DISPLAY_WIDTH = 960
 DISPLAY_HEIGHT = 540
@@ -157,6 +157,11 @@ def get_duplicate_box_mask(box_list):
 
     box_mask = np.ones(len(box_list))
 
+    if(len(box_list)>0):
+        print(len(box_list))
+        file = open ('/var/www/html/1.html','w' )
+        file.write('The number is %d'%(len(box_list)))
+        file.close()
     for i in range(len(box_list)):
         if box_mask[i] == 0: continue
         for j in range(i + 1, len(box_list)):
@@ -528,11 +533,11 @@ def main():
     TY_BOX_PROBABILITY_THRESHOLD = 0.13
 
     while (True):
-        for input_video_file in input_video_filename_list :
-            video_device = cv2.VideoCapture("./" + input_video_file)
+        while (True):
+            video_device = cv2.VideoCapture(0)
 
-            actual_frame_width = video_device.get(cv2.CAP_PROP_FRAME_WIDTH)
-            actual_frame_height = video_device.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            #actual_frame_width = video_device.get(cv2.CAP_PROP_FRAME_WIDTH)
+            #actual_frame_height = video_device.get(cv2.CAP_PROP_FRAME_HEIGHT)
             print ('actual video resolution: ' + str(actual_frame_width) + ' x ' + str(actual_frame_height))
 
             if ((video_device == None) or (not video_device.isOpened())):
