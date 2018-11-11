@@ -1,0 +1,4 @@
+#!/bin/bash
+cp ./*.yaml ~/.homeassistant
+cp -rf python_scripts ~/.homeassistant
+cp -rf custom_components ~/.homeassistant
