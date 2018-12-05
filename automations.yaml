@@ -1,0 +1,96 @@
+- id: 5b77e7df902a496d90650c641e1dcfca
+  alias: temprature
+  trigger: []
+  condition:
+  - condition: state
+    entity_id: binary_sensor.door_window_sensor_158d0002766760
+    state: 'off'
+  action:
+  - condition: state
+    entity_id: light.hue_color_lamp_1
+    state: 'on'
+  initial_state: true
+- id: '1541903129256'
+  alias: mooc
+  trigger:
+  - entity_id: binary_sensor.door_window_sensor_158d0002766760
+    from: 'on'
+    platform: state
+    to: 'off'
+  - event_data: {}
+    event_type: time_changed
+    platform: event
+  condition: []
+  action:
+  - data:
+      entity_id: light.hue_color_lamp_1
+    service: light.toggle
+- id: '1541907955893'
+  alias: light
+  trigger:
+  - entity_id: light.gateway_light_7811dcfd5a72
+    from: 'off'
+    platform: state
+    to: 'on'
+  condition: []
+  action:
+  - data:
+      entity_id: light.hue_color_lamp_1
+      rgb_color:
+      - 255
+      - 255
+      - 255
+    service: python_script.light
+- id: '1541911467135'
+  alias: 新建自动化
+  trigger:
+  - event_data: {}
+    event_type: TIME_CHANGED
+    platform: event
+  condition: []
+  action:
+  - service: python_script.hello_world
+- id: '1541911554568'
+  alias: timer change
+  trigger:
+  - event_data: {}
+    event_type: time_changed
+    platform: event
+  condition: []
+  action:
+  - service: python_script.hello_world
+- id: '1541913083885'
+  alias: door2light off
+  trigger:
+  - event_data: {}
+    event_type: time_changed
+    platform: event
+  condition:
+  - below: '3'
+    condition: numeric_state
+    entity_id: hachina.hello_world
+  action:
+  - service: light.turn_off
+- id: '1541913590565'
+  alias: door2light on
+  trigger:
+  - event_data: {}
+    event_type: time_changed
+    platform: event
+  condition:
+  - above: '2'
+    below: '10'
+    condition: numeric_state
+    entity_id: hachina.hello_world
+  action:
+  - service: light.turn_on
+- id: '1541926351136'
+  alias: hichina
+  trigger:
+  - entity_id: hachina.hello_world
+    from: '0'
+    platform: state
+    to: '1'
+  condition: []
+  action:
+  - service: light.turn_off

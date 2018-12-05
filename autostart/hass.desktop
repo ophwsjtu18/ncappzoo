@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/pi/.local/bin/hass --open-ui
+Icon=/home/pi/image-recognition/demo01.jpg
